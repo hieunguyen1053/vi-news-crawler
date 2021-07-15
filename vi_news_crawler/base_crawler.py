@@ -38,14 +38,22 @@ class Crawler(object):
         return self.__date
 
     def crawl(self):
-        f = urllib.request.urlopen(self.url)
+        r = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0'})
+        f = urllib.request.urlopen(r)
         html = f.read().decode('utf-8')
         soup = BeautifulSoup(html, 'html.parser')
 
-        self.__title = soup.select_one(self.args['title_selector']).get_text()
-        self.__summary = soup.select_one(self.args['summary_selector']).get_text()
-        self.__author = soup.select_one(self.args['author_selector']).get_text()
-        self.__date = soup.select_one(self.args['date_selector']).get_text()
+        self.__title = soup.select_one(self.args['title_selector']).get_text().strip()
+        self.__author = soup.select_one(self.args['author_selector']).get_text().strip()
+        self.__date = soup.select_one(self.args['date_selector']).get_text().strip()
+
+        summary = soup.select_one(self.args['summary_selector']).get_text()
+        sentences = []
+        for sentence in sent_tokenize(summary):
+            sentence = ' '.join(word_tokenize(sentence))
+            sentences.append(sentence)
+        if len(sentences) != 0:
+            self.__summary = '\n'.join(sentences)
 
         paragraphs = []
         for paragraph in soup.select(self.args['content_selector']):
@@ -54,7 +62,8 @@ class Crawler(object):
                 for sentence in sent_tokenize(paragraph.get_text()):
                     sentence = ' '.join(word_tokenize(sentence))
                     sentences.append(sentence)
-                paragraphs.append('\n'.join(sentences))
+                if len(sentences) != 0:
+                    paragraphs.append('\n'.join(sentences))
         self.__content = '\n\n'.join(paragraphs)
 
     def json(self):
