@@ -15,7 +15,7 @@ class Crawler(object):
         self.__author  = None
         self.__date    = None
 
-        self.crawl()
+        self.crawl_page()
 
     @property
     def title(self):
@@ -37,15 +37,30 @@ class Crawler(object):
     def date(self):
         return self.__date
 
-    def crawl(self):
+    def crawl_page(self):
         r = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0'})
         f = urllib.request.urlopen(r)
         html = f.read().decode('utf-8')
         soup = BeautifulSoup(html, 'html.parser')
 
-        self.__title = soup.select_one(self.args['title_selector']).get_text().strip()
-        self.__author = soup.select_one(self.args['author_selector']).get_text().strip()
-        self.__date = soup.select_one(self.args['date_selector']).get_text().strip()
+        title = soup.select_one(self.args['title_selector'])
+        if title is not None:
+            self.__title = title.get_text().strip()
+        else:
+            title = soup.select_one('title')
+            self.__title = title.get_text().strip()
+
+        author = soup.select_one(self.args['author_selector'])
+        if author is not None:
+            self.__author = soup.select_one(self.args['author_selector']).get_text().strip()
+        else:
+            self.__author = 'Unknown'
+
+        date = soup.select_one(self.args['date_selector'])
+        if date is not None:
+            self.__date = soup.select_one(self.args['date_selector']).get_text().strip()
+        else:
+            self.__date = 'Unknown'
 
         summary = soup.select_one(self.args['summary_selector']).get_text()
         sentences = []
@@ -75,3 +90,12 @@ class Crawler(object):
             'author': self.author,
             'date': self.date
         }, ensure_ascii=False)
+
+    @classmethod
+    def crawl_anchors(cls, url, anchor_selector):
+        r = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        f = urllib.request.urlopen(r)
+        html = f.read().decode('utf-8')
+        soup = BeautifulSoup(html, 'html.parser')
+
+        return soup.select(anchor_selector)
