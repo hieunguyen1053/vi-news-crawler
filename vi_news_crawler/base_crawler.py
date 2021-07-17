@@ -1,85 +1,18 @@
 import json
-import urllib.request
+from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup
 from ViNLP import sent_tokenize, word_tokenize
 
 
-class Crawler(object):
-    def __init__(self, url, args):
-        self.url       = url
-        self.args      = args
-        self.__title   = None
-        self.__summary = None
-        self.__content = None
-        self.__author  = None
-        self.__date    = None
-
-        self.crawl_page()
-
-    @property
-    def title(self):
-        return self.__title
-
-    @property
-    def summary(self):
-        return self.__summary
-
-    @property
-    def content(self):
-        return self.__content
-
-    @property
-    def author(self):
-        return self.__author
-
-    @property
-    def date(self):
-        return self.__date
-
-    def crawl_page(self):
-        r = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0'})
-        f = urllib.request.urlopen(r)
-        html = f.read().decode('utf-8')
-        soup = BeautifulSoup(html, 'html.parser')
-
-        title = soup.select_one(self.args['title_selector'])
-        if title is not None:
-            self.__title = title.get_text().strip()
-        else:
-            title = soup.select_one('title')
-            self.__title = title.get_text().strip()
-
-        author = soup.select_one(self.args['author_selector'])
-        if author is not None:
-            self.__author = soup.select_one(self.args['author_selector']).get_text().strip()
-        else:
-            self.__author = 'Unknown'
-
-        date = soup.select_one(self.args['date_selector'])
-        if date is not None:
-            self.__date = soup.select_one(self.args['date_selector']).get_text().strip()
-        else:
-            self.__date = 'Unknown'
-
-        summary = soup.select_one(self.args['summary_selector']).get_text()
-        sentences = []
-        for sentence in sent_tokenize(summary):
-            sentence = ' '.join(word_tokenize(sentence))
-            sentences.append(sentence)
-        if len(sentences) != 0:
-            self.__summary = '\n'.join(sentences)
-
-        paragraphs = []
-        for paragraph in soup.select(self.args['content_selector']):
-            if paragraph.get_text():
-                sentences = []
-                for sentence in sent_tokenize(paragraph.get_text()):
-                    sentence = ' '.join(word_tokenize(sentence))
-                    sentences.append(sentence)
-                if len(sentences) != 0:
-                    paragraphs.append('\n'.join(sentences))
-        self.__content = '\n\n'.join(paragraphs)
+class Document(object):
+    def __init__(self, url: str, title: str, summary: str, content: str, author: str, date: str):
+        self.url = url
+        self.title = title
+        self.summary = summary
+        self.content = content
+        self.author = author
+        self.date = date
 
     def json(self):
         return json.dumps({
@@ -91,11 +24,64 @@ class Crawler(object):
             'date': self.date
         }, ensure_ascii=False)
 
+
+class Crawler(object):
     @classmethod
-    def crawl_anchors(cls, url, anchor_selector):
-        r = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        f = urllib.request.urlopen(r)
+    def crawl_page(cls, url: str, args: dict):
+        r = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        f = urlopen(r)
         html = f.read().decode('utf-8')
         soup = BeautifulSoup(html, 'html.parser')
 
+        title = soup.select_one(args['title_selector'])
+        if title is not None:
+            title = title.get_text().strip()
+        else:
+            title = soup.select_one('title')
+            title = title.get_text().strip()
+
+        author = soup.select_one(args['author_selector'])
+        if author is not None:
+            author = soup.select_one(
+                args['author_selector']).get_text().strip()
+        else:
+            author = 'Unknown'
+
+        date = soup.select_one(args['date_selector'])
+        if date is not None:
+            date = soup.select_one(
+                args['date_selector']).get_text().strip()
+        else:
+            date = 'Unknown'
+
+        summary = soup.select_one(args['summary_selector']).get_text()
+        sentences = []
+        for sentence in sent_tokenize(summary):
+            sentence = ' '.join(word_tokenize(sentence))
+            sentences.append(sentence)
+        if len(sentences) != 0:
+            summary = '\n'.join(sentences)
+
+        paragraphs = []
+        for paragraph in soup.select(args['content_selector']):
+            if paragraph.get_text():
+                sentences = []
+                for sentence in sent_tokenize(paragraph.get_text()):
+                    sentence = ' '.join(word_tokenize(sentence))
+                    sentences.append(sentence)
+                if len(sentences) != 0:
+                    paragraphs.append('\n'.join(sentences))
+        content = '\n\n'.join(paragraphs)
+        return Document(url, title, summary, content, author, date)
+
+    @classmethod
+    def crawl_anchors(cls, url, anchor_selector):
+        r = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        f = urlopen(r)
+        html = f.read().decode('utf-8')
+        soup = BeautifulSoup(html, 'html.parser')
         return soup.select(anchor_selector)
+
+    @classmethod
+    def yield_links(cls, num_pages=1):
+        raise NotImplementedError

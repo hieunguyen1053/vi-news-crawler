@@ -2,7 +2,8 @@ from .base_crawler import Crawler
 
 
 class DanTriCrawler(Crawler):
-    domain = 'https://dantri.com.vn'
+    NAME = 'dantri'
+    DOMAIN = 'https://dantri.com.vn'
     CATEGORIES = {
         'an-sinh': '/an-sinh.htm',
         'bat-dong-san': '/bat-dong-san.htm',
@@ -22,19 +23,24 @@ class DanTriCrawler(Crawler):
         'xa-hoi': '/xa-hoi.htm',
     }
 
-    params = {
-        'title_selector': 'h1.dt-news__title',
-        'summary_selector': 'div.dt-news__sapo h2',
-        'content_selector': 'div.dt-news__content p:not(:last-child)',
-        'author_selector': 'div.dt-news__content p[style*="text-align:right"]',
-        'date_selector': 'span.dt-news__time',
+    PARAMS = {
+        'title_selector': '.dt-news__title',
+        'summary_selector': '.dt-news__sapo h2',
+        'content_selector': '.dt-news__content p:not(:last-child)',
+        'author_selector': '.dt-news__content p[style*="text-align:right"]',
+        'date_selector': '.dt-news__time',
     }
 
-    def __init__(self, url):
-        super(DanTriCrawler, self).__init__(url, self.params)
+    @classmethod
+    def crawl_page(cls, url):
+        return super().crawl_page(url, cls.PARAMS)
 
     @classmethod
-    def crawl_anchors(cls, category, no_page=1):
+    def yield_links(cls, num_pages=1):
         anchor_selector = '.dt-highlight .news-item h3 a,.dt-main-category .news-item h3 a'
-        url = cls.domain + cls.CATEGORIES[category].replace('.htm', f'/trang-{no_page}.htm')
-        return list(set(super(DanTriCrawler, cls).crawl_anchors(url, anchor_selector)))
+        for no_page in range(1, num_pages + 1):
+            for category in cls.CATEGORIES:
+                url = cls.DOMAIN + cls.CATEGORIES[category]
+                url = url.replace('.htm', f'/trang-{no_page}.htm')
+                for anchor in cls.crawl_anchors(url, anchor_selector):
+                    yield category, cls.DOMAIN + anchor['href']
