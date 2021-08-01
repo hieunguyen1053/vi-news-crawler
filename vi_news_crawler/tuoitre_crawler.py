@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from .base_crawler import Crawler
 
 
@@ -35,8 +37,9 @@ class TuoitreCrawler(Crawler):
     @classmethod
     def yield_links(cls, num_pages=1):
         anchor_selector = '.news-item .title-news a'
-        for no_page in range(1, num_pages + 1):
+        for no_page in tqdm(range(1, num_pages + 1)):
             for category in cls.CATEGORIES:
-                url = cls.DOMAIN + cls.CATEGORIES[category] + f'/trang-{no_page}.htm'
+                url = cls.DOMAIN + cls.CATEGORIES[category]
+                url = url.replace('.htm', f'/trang-{no_page}.htm')
                 for anchor in cls.crawl_anchors(url, anchor_selector):
                     yield category, cls.DOMAIN + anchor['href']
