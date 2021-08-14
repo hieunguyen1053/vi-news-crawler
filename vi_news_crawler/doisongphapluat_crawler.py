@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from .base_crawler import Crawler
 
 
@@ -11,8 +13,8 @@ class DoiSongPhapLuatCrawler(Crawler):
         'kinh-doanh': '/c/kinh-doanh',
         'phap-luat': '/c/phap-luat',
         'the-thao': '/c/the-thao',
-        'tin-tuc': '/c/tin-tuc',
-        'xa-hoi': '/c/xa-hoi',
+        'thoi-su': '/c/tin-tuc',
+        # 'xa-hoi': '/c/xa-hoi',
     }
 
     PARAMS = {
@@ -30,7 +32,7 @@ class DoiSongPhapLuatCrawler(Crawler):
     @classmethod
     def yield_links(cls, num_pages=1):
         anchor_selector = '.box-news .title a'
-        for no_page in range(1, num_pages + 1):
+        for no_page in tqdm(range(1, num_pages + 1)):
             for category in cls.CATEGORIES:
                 url = cls.DOMAIN + cls.CATEGORIES[category] + f'/page/{no_page}'
                 for anchor in cls.crawl_anchors(url, anchor_selector):

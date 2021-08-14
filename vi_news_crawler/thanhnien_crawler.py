@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from .base_crawler import Crawler
 
 
@@ -8,16 +10,16 @@ class ThanhnienCrawler(Crawler):
         'cong-nghe': '/cong-nghe',
         'doi-song': '/doi-song',
         'du-lich': '/du-lich',
-        'game': '/game',
+        # 'game': '/game',
         'giai-tri': '/giai-tri',
         'giao-duc': '/giao-duc',
-        'gioi-tre': '/gioi-tre',
-        'tai-chinh-kinh-doanh': '/tai-chinh-kinh-doanh',
+        # 'gioi-tre': '/gioi-tre',
+        'kinh-doanh': '/tai-chinh-kinh-doanh',
         'the-gioi': '/the-gioi',
         'the-thao': '/the-thao',
         'thoi-su': '/thoi-su',
         'van-hoa': '/van-hoa',
-        'xe': '/xe',
+        # 'xe': '/xe',
     }
 
     PARAMS = {
@@ -35,7 +37,7 @@ class ThanhnienCrawler(Crawler):
     @classmethod
     def yield_links(cls, num_pages=1):
         anchor_selector = '.zone--timeline .story h2 a'
-        for no_page in range(1, num_pages + 1):
+        for no_page in tqdm(range(1, num_pages + 1)):
             for category in cls.CATEGORIES:
                 url = cls.DOMAIN + cls.CATEGORIES[category] + f'/trang-{no_page}.html'
                 for anchor in cls.crawl_anchors(url, anchor_selector):

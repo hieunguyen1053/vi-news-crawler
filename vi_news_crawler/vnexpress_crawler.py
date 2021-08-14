@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from .base_crawler import Crawler
 
 
@@ -5,17 +6,17 @@ class VnExpressCrawler(Crawler):
     NAME = 'vnexpress'
     DOMAIN = 'https://vnexpress.net'
     CATEGORIES = {
-        'thoi-su': '/thoi-su',
-        'the-gioi': '/the-gioi',
-        'kinh-doanh': '/kinh-doanh',
-        'khoa-hoc': '/khoa-hoc',
-        'giai-tri': '/giai-tri',
-        'the-thao': '/the-thao',
-        'phap-luat': '/phap-luat',
-        'giao-duc': '/giao-duc',
-        'suc-khoe': '/suc-khoe',
         'doi-song': '/doi-song',
         'du-lich': '/du-lich',
+        'giai-tri': '/giai-tri',
+        'giao-duc': '/giao-duc',
+        'khoa-hoc': '/khoa-hoc',
+        'kinh-doanh': '/kinh-doanh',
+        'phap-luat': '/phap-luat',
+        'suc-khoe': '/suc-khoe',
+        'the-gioi': '/the-gioi',
+        'the-thao': '/the-thao',
+        'thoi-su': '/thoi-su',
     }
 
     PARAMS = {
@@ -33,7 +34,7 @@ class VnExpressCrawler(Crawler):
     @classmethod
     def yield_links(cls, num_pages=1):
         anchor_selector = '.item-news-common .title-news a'
-        for no_page in range(1, num_pages + 1):
+        for no_page in tqdm(range(1, num_pages + 1)):
             for category in cls.CATEGORIES:
                 url = cls.DOMAIN + cls.CATEGORIES[category] + f'-p{no_page}'
                 for anchor in cls.crawl_anchors(url, anchor_selector):

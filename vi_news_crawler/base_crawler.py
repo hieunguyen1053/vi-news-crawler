@@ -1,4 +1,5 @@
 import json
+import unicodedata
 from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup
@@ -31,6 +32,7 @@ class Crawler(object):
         r = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         f = urlopen(r)
         html = f.read().decode('utf-8')
+        html = unicodedata.normalize('NFKC', html)
         soup = BeautifulSoup(html, 'html.parser')
 
         title = soup.select_one(args['title_selector'])

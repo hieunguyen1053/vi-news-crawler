@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from .base_crawler import Crawler
 
 
@@ -5,22 +7,22 @@ class DanTriCrawler(Crawler):
     NAME = 'dantri'
     DOMAIN = 'https://dantri.com.vn'
     CATEGORIES = {
-        'an-sinh': '/an-sinh.htm',
-        'bat-dong-san': '/bat-dong-san.htm',
+        # 'an-sinh': '/an-sinh.htm',
+        # 'bat-dong-san': '/bat-dong-san.htm',
         'giai-tri': '/giai-tri.htm',
-        'giao-duc-huong-nghiep': '/giao-duc-huong-nghiep.htm',
+        'giao-duc': '/giao-duc-huong-nghiep.htm',
         'kinh-doanh': '/kinh-doanh.htm',
-        'lao-dong-viec-lam': '/lao-dong-viec-lam.htm',
-        'o-to-xe-may': '/o-to-xe-may.htm',
+        # 'lao-dong-viec-lam': '/lao-dong-viec-lam.htm',
+        # 'o-to-xe-may': '/o-to-xe-may.htm',
         'phap-luat': '/phap-luat.htm',
-        'su-kien': '/su-kien.htm',
+        # 'su-kien': '/su-kien.htm',
         'suc-khoe': '/suc-khoe.htm',
-        'suc-manh-so': '/suc-manh-so.htm',
-        'tam-long-nhan-ai': '/tam-long-nhan-ai.htm',
+        # 'suc-manh-so': '/suc-manh-so.htm',
+        # 'tam-long-nhan-ai': '/tam-long-nhan-ai.htm',
         'the-gioi': '/the-gioi.htm',
         'the-thao': '/the-thao.htm',
         'van-hoa': '/van-hoa.htm',
-        'xa-hoi': '/xa-hoi.htm',
+        # 'xa-hoi': '/xa-hoi.htm',
     }
 
     PARAMS = {
@@ -38,7 +40,7 @@ class DanTriCrawler(Crawler):
     @classmethod
     def yield_links(cls, num_pages=1):
         anchor_selector = '.dt-highlight .news-item h3 a,.dt-main-category .news-item h3 a'
-        for no_page in range(1, num_pages + 1):
+        for no_page in tqdm(range(1, num_pages + 1)):
             for category in cls.CATEGORIES:
                 url = cls.DOMAIN + cls.CATEGORIES[category]
                 url = url.replace('.htm', f'/trang-{no_page}.htm')
